@@ -2,26 +2,24 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Sistem Absensi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Absensi Teens</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Absensi Mingguan</h1>
+    <p>Masukkan nama lengkap kamu untuk absen</p>
 
-    <div class="form-group">
-      <label for="nameInput">Cari Nama:</label>
-      <input type="text" id="nameInput" placeholder="Ketik nama..." onkeyup="filterNames()">
-      <ul id="suggestions"></ul>
-    </div>
+    <!-- kode mingguan -->
+    <div id="weekly-code">Kode Mingguan: <span id="code">Loading...</span></div>
 
-    <div class="form-group">
-      <label for="codeInput">Kode Mingguan:</label>
-      <input type="text" id="codeInput" placeholder="Masukkan kode minggu ini">
-    </div>
+    <!-- search bar -->
+    <input type="text" id="searchInput" placeholder="Cari nama kamu..." onkeyup="filterNames()">
+    <ul id="nameList"></ul>
 
-    <button onclick="submitAttendance()">Kirim Absensi</button>
-    <p id="status"></p>
+    <!-- pesan hasil -->
+    <div id="message"></div>
   </div>
 
   <script src="script.js"></script>
