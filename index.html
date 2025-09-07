@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistem Absensi</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Absensi Mingguan</h1>
+
+    <div class="form-group">
+      <label for="nameInput">Cari Nama:</label>
+      <input type="text" id="nameInput" placeholder="Ketik nama..." onkeyup="filterNames()">
+      <ul id="suggestions"></ul>
+    </div>
+
+    <div class="form-group">
+      <label for="codeInput">Kode Mingguan:</label>
+      <input type="text" id="codeInput" placeholder="Masukkan kode minggu ini">
+    </div>
+
+    <button onclick="submitAttendance()">Kirim Absensi</button>
+    <p id="status"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
