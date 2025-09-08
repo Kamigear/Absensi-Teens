@@ -2,24 +2,24 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Absensi Teens</title>
+  <title>Absensi Mingguan</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <h1>Absensi Mingguan</h1>
-    <p>Masukkan nama lengkap kamu untuk absen</p>
+    
+    <!-- Search Bar Nama -->
+    <label for="search">Cari Nama:</label>
+    <input type="text" id="search" placeholder="Ketik nama Anda...">
+    <ul id="result-list"></ul>
 
-    <!-- kode mingguan -->
-    <div id="weekly-code">Kode Mingguan: <span id="code">Loading...</span></div>
+    <!-- Kode Mingguan -->
+    <label for="weekly-code">Kode Mingguan:</label>
+    <input type="text" id="weekly-code" placeholder="Masukkan kode">
 
-    <!-- search bar -->
-    <input type="text" id="searchInput" placeholder="Cari nama kamu..." onkeyup="filterNames()">
-    <ul id="nameList"></ul>
-
-    <!-- pesan hasil -->
-    <div id="message"></div>
+    <button id="submit-btn">Absen</button>
+    <p id="status"></p>
   </div>
 
   <script src="script.js"></script>
