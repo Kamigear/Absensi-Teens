@@ -15,15 +15,16 @@ body {
   padding: 20px 30px;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  width: 350px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 400px; /* biar responsif */
   text-align: center;
+  box-sizing: border-box;
   transition: background 0.3s, color 0.3s;
 }
 
 h1 {
   margin-bottom: 20px;
-  font-size: 22px;
+  font-size: clamp(18px, 4vw, 22px); /* auto scale */
 }
 
 label {
@@ -31,7 +32,7 @@ label {
   margin-top: 15px;
   font-weight: bold;
   text-align: left;
-  font-size: 14px;
+  font-size: clamp(13px, 3.5vw, 14px);
 }
 
 input {
@@ -41,6 +42,7 @@ input {
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
+  box-sizing: border-box;
   transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
@@ -94,7 +96,6 @@ ul#result-list li:hover {
 /* Responsif untuk HP */
 @media (max-width: 480px) {
   .container {
-    width: 100%;
     padding: 15px;
     border-radius: 8px;
   }
@@ -133,7 +134,7 @@ ul#result-list li:hover {
   .container {
     background: #1e1e1e;
     color: #e0e0e0;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 10px rgba(255,255,255,0.1);
   }
 
   input {
