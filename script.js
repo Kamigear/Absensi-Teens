@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxMgYIklAMmLvFaKGxqTETTp8_hwGw0EaW4CE18a4lsRWDUHFgtKrQNR2haAF72A2OP/exec";
+const API_URL = "https://lingering-bush-bef7.richieleonardo20.workers.dev/";
 
 let masterData = [];
 let weeklyCode = "";
