@@ -19,7 +19,7 @@ function setInitialLoading(isLoading) {
   } else {
     searchInput.disabled = false;
     codeInput.disabled = false;
-    submitBtn.disabled = false;
+    submitBtn.disabled = false; // biar aman, baru enable setelah masterData ada
     submitBtn.innerHTML = "Absen";
     status.textContent = "";
   }
@@ -30,16 +30,20 @@ async function loadMasterData() {
   setInitialLoading(true);
 
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL, { cache: "no-store" });
     const data = await res.json();
 
     masterData = data.master || [];
     weeklyCode = data.weeklyCode || "";
 
     console.log("Master data loaded:", masterData, "Kode:", weeklyCode);
+
+    // Aktifkan tombol submit setelah data siap
+    document.getElementById("submit-btn").disabled = false;
   } catch (err) {
     console.error("Error loading sheet:", err);
-    document.getElementById("status").textContent = "Gagal memuat data master.";
+    document.getElementById("status").textContent =
+      "Gagal memuat data master. Periksa koneksi Anda lalu refresh.";
   } finally {
     setInitialLoading(false);
   }
@@ -56,11 +60,11 @@ function setupSearch() {
 
     if (!query) return;
 
-    const filtered = masterData.filter(nama =>
+    const filtered = masterData.filter((nama) =>
       nama.toLowerCase().includes(query)
     );
 
-    filtered.forEach(nama => {
+    filtered.forEach((nama) => {
       const li = document.createElement("li");
       li.textContent = nama;
       li.addEventListener("click", () => {
@@ -72,14 +76,20 @@ function setupSearch() {
   });
 }
 
-// Submit absensi (sama seperti sebelumnya)
+// Submit absensi
 async function submitAbsensi() {
   const nama = document.getElementById("search").value.trim();
   const kode = document.getElementById("weekly-code").value.trim();
   const status = document.getElementById("status");
 
   if (!nama || !kode) {
-    status.textContent = "Nama dan kode harus diisi.";
+    status.textContent = "Nama dan kode harus diisi. Jika belum terdaftar mohon cari pengurus";
+    return;
+  }
+
+  // Pastikan nama ada di masterData
+  if (!masterData.includes(nama)) {
+    status.textContent = "Nama tidak valid. Pilih dari daftar.";
     return;
   }
 
@@ -91,7 +101,7 @@ async function submitAbsensi() {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama, kode })
+      body: JSON.stringify({ nama, kode }),
     });
     const result = await res.json();
 
@@ -99,16 +109,29 @@ async function submitAbsensi() {
     status.textContent = result.message;
   } catch (err) {
     console.error("Error submit:", err);
-    status.textContent = "Gagal mengirim absensi.";
+    status.textContent = "Gagal mengirim absensi. Coba refresh halaman.";
   } finally {
     document.getElementById("submit-btn").disabled = false;
     document.getElementById("submit-btn").innerHTML = "Absen";
   }
 }
 
+// Listener koneksi internet
+window.addEventListener("offline", () => {
+  const status = document.getElementById("status");
+  status.textContent = "⚠️ Koneksi internet terputus. Silakan cek koneksi Anda.";
+  alert("Koneksi internet hilang. Halaman akan di-refresh ketika online kembali.");
+});
+
+window.addEventListener("online", () => {
+  location.reload(); // paksa refresh biar data master diambil ulang
+});
+
 // Inisialisasi
 window.addEventListener("DOMContentLoaded", () => {
   loadMasterData();
   setupSearch();
-  document.getElementById("submit-btn").addEventListener("click", submitAbsensi);
+  document
+    .getElementById("submit-btn")
+    .addEventListener("click", submitAbsensi);
 });
