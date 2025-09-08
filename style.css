@@ -6,6 +6,8 @@ body {
   align-items: center;
   min-height: 100vh;
   margin: 0;
+  padding: 10px;
+  transition: background 0.3s, color 0.3s;
 }
 
 .container {
@@ -14,11 +16,14 @@ body {
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   width: 350px;
+  max-width: 100%;
   text-align: center;
+  transition: background 0.3s, color 0.3s;
 }
 
 h1 {
   margin-bottom: 20px;
+  font-size: 22px;
 }
 
 label {
@@ -26,6 +31,7 @@ label {
   margin-top: 15px;
   font-weight: bold;
   text-align: left;
+  font-size: 14px;
 }
 
 input {
@@ -34,11 +40,13 @@ input {
   margin-top: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  font-size: 14px;
+  transition: background 0.3s, color 0.3s, border 0.3s;
 }
 
 button {
   margin-top: 20px;
-  padding: 10px;
+  padding: 12px;
   width: 100%;
   background: #3498db;
   color: white;
@@ -46,10 +54,16 @@ button {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
 button:hover {
   background: #2980b9;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 #status {
@@ -64,18 +78,93 @@ ul#result-list {
   border: 1px solid #ddd;
   max-height: 120px;
   overflow-y: auto;
+  text-align: left;
 }
 
 ul#result-list li {
   padding: 8px;
   cursor: pointer;
+  font-size: 14px;
 }
 
 ul#result-list li:hover {
   background: #eee;
 }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+/* Responsif untuk HP */
+@media (max-width: 480px) {
+  .container {
+    width: 100%;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  h1 {
+    font-size: 18px;
+  }
+
+  label {
+    font-size: 13px;
+  }
+
+  input {
+    font-size: 13px;
+    padding: 8px;
+  }
+
+  button {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  ul#result-list li {
+    font-size: 13px;
+    padding: 6px;
+  }
+}
+
+/* Dark Mode Otomatis */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #121212;
+    color: #e0e0e0;
+  }
+
+  .container {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+  }
+
+  input {
+    background: #2c2c2c;
+    color: #e0e0e0;
+    border: 1px solid #444;
+  }
+
+  input::placeholder {
+    color: #888;
+  }
+
+  button {
+    background: #3498db;
+    color: #fff;
+  }
+
+  button:hover {
+    background: #2980b9;
+  }
+
+  ul#result-list {
+    background: #2c2c2c;
+    border: 1px solid #444;
+  }
+
+  ul#result-list li {
+    color: #e0e0e0;
+  }
+
+  ul#result-list li:hover {
+    background: #333;
+  }
 }
