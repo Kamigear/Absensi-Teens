@@ -1,80 +1,69 @@
-const API_URL = "https://lingering-bush-bef7.richieleonardo20.workers.dev/";
-
-let masterData = [];
-let weeklyCode = "";
-
-// Ambil data master dari Google Sheets
-async function loadMasterData() {
-  try {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-
-    masterData = data.master || [];
-    weeklyCode = data.weeklyCode || "";
-
-    console.log("Master data loaded:", masterData, "Kode:", weeklyCode);
-  } catch (err) {
-    console.error("Error loading sheet:", err);
-  }
-}
-
-// Fungsi search filter
-function setupSearch() {
+document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search");
   const resultList = document.getElementById("result-list");
+  const submitBtn = document.getElementById("submit-btn");
+  const status = document.getElementById("status");
+  const weeklyCodeInput = document.getElementById("weekly-code");
 
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.toLowerCase();
+  let selectedName = "";
+
+  // 🔍 Cari Nama dari Master Data
+  searchInput.addEventListener("input", async () => {
+    const query = searchInput.value.trim();
     resultList.innerHTML = "";
 
-    if (!query) return;
+    if (query.length === 0) return;
 
-    const filtered = masterData.filter(nama =>
-      nama.toLowerCase().includes(query)
-    );
+    const res = await fetch(`/search?name=${encodeURIComponent(query)}`);
+    const names = await res.json();
 
-    filtered.forEach(nama => {
+    names.forEach(name => {
       const li = document.createElement("li");
-      li.textContent = nama;
+      li.textContent = name;
       li.addEventListener("click", () => {
-        searchInput.value = nama;
+        searchInput.value = name;
+        selectedName = name;
         resultList.innerHTML = "";
       });
       resultList.appendChild(li);
     });
   });
-}
 
-// Submit absensi
-async function submitAbsensi() {
-  const nama = document.getElementById("search").value.trim();
-  const kode = document.getElementById("weekly-code").value.trim();
-  const status = document.getElementById("status");
+  // 📝 Submit Absensi
+  submitBtn.addEventListener("click", async () => {
+    if (!selectedName) {
+      status.textContent = "Pilih nama Anda dulu.";
+      return;
+    }
 
-  if (!nama || !kode) {
-    status.textContent = "Nama dan kode harus diisi.";
-    return;
-  }
+    // 🚀 Aktifkan Loading State
+    submitBtn.disabled = true;
+    searchInput.disabled = true;
+    submitBtn.innerHTML = "⏳ Loading..."; // bisa juga pakai spinner CSS
+    status.textContent = "Sedang memproses...";
 
-  try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nama, kode })
-    });
-    const result = await res.json();
+    const code = weeklyCodeInput.value.trim();
 
-    console.log("Submit result:", result);
-    status.textContent = result.message;
-  } catch (err) {
-    console.error("Error submit:", err);
-    status.textContent = "Gagal mengirim absensi.";
-  }
-}
+    try {
+      const res = await fetch("/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: selectedName, code })
+      });
+      const result = await res.json();
 
-// Inisialisasi
-window.addEventListener("DOMContentLoaded", () => {
-  loadMasterData();
-  setupSearch();
-  document.getElementById("submit-btn").addEventListener("click", submitAbsensi);
+      if (result.success) {
+        status.textContent = "✅ Absensi berhasil!";
+      } else {
+        status.textContent = "❌ " + (result.message || "Gagal absen.");
+      }
+    } catch (err) {
+      status.textContent = "⚠️ Error: " + err.message;
+    } finally {
+      // 🔄 Kembalikan normal
+      submitBtn.disabled = false;
+      searchInput.disabled = false;
+      submitBtn.innerHTML = "Absen";
+    }
+  });
 });
