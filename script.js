@@ -15,7 +15,7 @@ function setInitialLoading(isLoading) {
     codeInput.disabled = true;
     submitBtn.disabled = true;
     submitBtn.innerHTML = "⏳ Loading data...";
-    status.textContent = "Sedang mengambil data master...";
+    status.textContent = "Sedang mengambil data...";
   } else {
     searchInput.disabled = false;
     codeInput.disabled = false;
