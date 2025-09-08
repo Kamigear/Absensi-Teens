@@ -83,7 +83,7 @@ async function submitAbsensi() {
   const status = document.getElementById("status");
 
   if (!nama || !kode) {
-    status.textContent = "Nama dan kode harus diisi. Jika belum terdaftar mohon cari pengurus";
+    status.textContent = "Nama dan kode harus diisi.";
     return;
   }
 
