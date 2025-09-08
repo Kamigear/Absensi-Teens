@@ -1,69 +1,114 @@
-document.addEventListener("DOMContentLoaded", () => {
+const API_URL = "https://lingering-bush-bef7.richieleonardo20.workers.dev/";
+
+let masterData = [];
+let weeklyCode = "";
+
+// Toggle loading UI di awal
+function setInitialLoading(isLoading) {
   const searchInput = document.getElementById("search");
-  const resultList = document.getElementById("result-list");
+  const codeInput = document.getElementById("weekly-code");
   const submitBtn = document.getElementById("submit-btn");
   const status = document.getElementById("status");
-  const weeklyCodeInput = document.getElementById("weekly-code");
 
-  let selectedName = "";
+  if (isLoading) {
+    searchInput.disabled = true;
+    codeInput.disabled = true;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "⏳ Loading data...";
+    status.textContent = "Sedang mengambil data master...";
+  } else {
+    searchInput.disabled = false;
+    codeInput.disabled = false;
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = "Absen";
+    status.textContent = "";
+  }
+}
 
-  // 🔍 Cari Nama dari Master Data
-  searchInput.addEventListener("input", async () => {
-    const query = searchInput.value.trim();
+// Ambil data master dari Google Sheets
+async function loadMasterData() {
+  setInitialLoading(true);
+
+  try {
+    const res = await fetch(API_URL);
+    const data = await res.json();
+
+    masterData = data.master || [];
+    weeklyCode = data.weeklyCode || "";
+
+    console.log("Master data loaded:", masterData, "Kode:", weeklyCode);
+  } catch (err) {
+    console.error("Error loading sheet:", err);
+    document.getElementById("status").textContent = "Gagal memuat data master.";
+  } finally {
+    setInitialLoading(false);
+  }
+}
+
+// Fungsi search filter
+function setupSearch() {
+  const searchInput = document.getElementById("search");
+  const resultList = document.getElementById("result-list");
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase();
     resultList.innerHTML = "";
 
-    if (query.length === 0) return;
+    if (!query) return;
 
-    const res = await fetch(`/search?name=${encodeURIComponent(query)}`);
-    const names = await res.json();
+    const filtered = masterData.filter(nama =>
+      nama.toLowerCase().includes(query)
+    );
 
-    names.forEach(name => {
+    filtered.forEach(nama => {
       const li = document.createElement("li");
-      li.textContent = name;
+      li.textContent = nama;
       li.addEventListener("click", () => {
-        searchInput.value = name;
-        selectedName = name;
+        searchInput.value = nama;
         resultList.innerHTML = "";
       });
       resultList.appendChild(li);
     });
   });
+}
 
-  // 📝 Submit Absensi
-  submitBtn.addEventListener("click", async () => {
-    if (!selectedName) {
-      status.textContent = "Pilih nama Anda dulu.";
-      return;
-    }
+// Submit absensi (sama seperti sebelumnya)
+async function submitAbsensi() {
+  const nama = document.getElementById("search").value.trim();
+  const kode = document.getElementById("weekly-code").value.trim();
+  const status = document.getElementById("status");
 
-    // 🚀 Aktifkan Loading State
-    submitBtn.disabled = true;
-    searchInput.disabled = true;
-    submitBtn.innerHTML = "⏳ Loading..."; // bisa juga pakai spinner CSS
-    status.textContent = "Sedang memproses...";
+  if (!nama || !kode) {
+    status.textContent = "Nama dan kode harus diisi.";
+    return;
+  }
 
-    const code = weeklyCodeInput.value.trim();
+  // tombol loading
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("submit-btn").innerHTML = "⏳ Absen...";
 
-    try {
-      const res = await fetch("/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: selectedName, code })
-      });
-      const result = await res.json();
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, kode })
+    });
+    const result = await res.json();
 
-      if (result.success) {
-        status.textContent = "✅ Absensi berhasil!";
-      } else {
-        status.textContent = "❌ " + (result.message || "Gagal absen.");
-      }
-    } catch (err) {
-      status.textContent = "⚠️ Error: " + err.message;
-    } finally {
-      // 🔄 Kembalikan normal
-      submitBtn.disabled = false;
-      searchInput.disabled = false;
-      submitBtn.innerHTML = "Absen";
-    }
-  });
+    console.log("Submit result:", result);
+    status.textContent = result.message;
+  } catch (err) {
+    console.error("Error submit:", err);
+    status.textContent = "Gagal mengirim absensi.";
+  } finally {
+    document.getElementById("submit-btn").disabled = false;
+    document.getElementById("submit-btn").innerHTML = "Absen";
+  }
+}
+
+// Inisialisasi
+window.addEventListener("DOMContentLoaded", () => {
+  loadMasterData();
+  setupSearch();
+  document.getElementById("submit-btn").addEventListener("click", submitAbsensi);
 });
