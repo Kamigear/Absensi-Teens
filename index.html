@@ -6,7 +6,13 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div id="loading-logo">⏳</div>
+    <div id="loading-text">Mengambil data...</div>
+  </div>
+
+  <div class="container" style="display:none;">
     <h1>Absensi Mingguan</h1>
     
     <!-- Search Bar Nama -->
@@ -22,6 +28,14 @@
     <p id="status"></p>
     <p>Jika nama belum terdaftar, mohon daftar dengan pengurus</p>
   </div>
+
+  <div id="location-overlay" class="overlay hidden">
+    <div class="overlay-content">
+      <p id="overlay-text">❌ Mohon berikan izin lokasi untuk melanjutkan absensi.</p>
+      <button id="allow-location">Izinkan Lokasi</button>
+    </div>
+  </div>
+
 
   <script src="script.js"></script>
 </body>

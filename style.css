@@ -10,6 +10,31 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
+/* Loading Screen */
+#loading-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #f4f6f9;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+#loading-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+#loading-logo {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+#loading-text {
+  font-size: 16px;
+  color: #555;
+}
+
 .container {
   background: white;
   padding: 20px 30px;
@@ -92,7 +117,7 @@ ul#result-list li:hover {
   background: #eee;
 }
 
-/* Responsif untuk HP portrait */
+/* Responsif HP portrait */
 @media screen and (max-width: 480px) and (orientation: portrait) {
   .container {
     max-width: 95%;
@@ -124,18 +149,18 @@ ul#result-list li:hover {
   }
 }
 
-/* Responsif untuk HP landscape */
-@media screen and (max-width: 812px) and (orientation: landscape) {
-  .container {
-    max-width: 70%;
-  }
-}
-
-/* Dark Mode Otomatis */
+/* Dark Mode */
 @media (prefers-color-scheme: dark) {
   body {
     background: #121212;
     color: #e0e0e0;
+  }
+
+  #loading-screen {
+    background: #121212;
+  }
+  #loading-text {
+    color: #bbb;
   }
 
   .container {
@@ -175,4 +200,23 @@ ul#result-list li:hover {
   ul#result-list li:hover {
     background: #333;
   }
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.overlay.hidden {
+  display: none;
+}
+.overlay-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 300px;
 }

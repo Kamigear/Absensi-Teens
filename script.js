@@ -1,55 +1,123 @@
 const API_URL = "https://lingering-bush-bef7.richieleonardo20.workers.dev/";
 
+const targetLat = -6.142195319651587;
+const targetLng = 106.67969693645462;
+const MAX_DISTANCE_METERS = 200;
+
 let masterData = [];
 let weeklyCode = "";
+let locationRestricted = false;
+let enabled = true;
 
-// Toggle loading UI di awal
-function setInitialLoading(isLoading) {
-  const searchInput = document.getElementById("search");
-  const codeInput = document.getElementById("weekly-code");
-  const submitBtn = document.getElementById("submit-btn");
-  const status = document.getElementById("status");
-
-  if (isLoading) {
-    searchInput.disabled = true;
-    codeInput.disabled = true;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = "⏳ Loading data...";
-    status.textContent = "Sedang mengambil data...";
-  } else {
-    searchInput.disabled = false;
-    codeInput.disabled = false;
-    submitBtn.disabled = false; // biar aman, baru enable setelah masterData ada
-    submitBtn.innerHTML = "Absen";
-    status.textContent = "";
-  }
+// Hitung jarak
+function getDistanceFromLatLon(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
-// Ambil data master dari Google Sheets
+// Ambil data master
 async function loadMasterData() {
-  setInitialLoading(true);
-
   try {
+    document.getElementById("loading-text").textContent = "📡 Mengambil data...";
     const res = await fetch(API_URL, { cache: "no-store" });
     const data = await res.json();
 
     masterData = data.master || [];
     weeklyCode = data.weeklyCode || "";
+    locationRestricted = data.locationRestricted ?? false;
+    enabled = data.enabled ?? true;
 
-    console.log("Master data loaded:", masterData, "Kode:", weeklyCode);
+    document.getElementById("loading-screen").classList.add("hidden");
+    document.querySelector(".container").style.display = "block";
 
-    // Aktifkan tombol submit setelah data siap
-    document.getElementById("submit-btn").disabled = false;
+    const overlay = document.getElementById("location-overlay");
+    const overlayText = document.getElementById("overlay-text");
+    const allowBtn = document.getElementById("allow-location");
+
+    if (!enabled) {
+      overlay.classList.remove("hidden");
+      overlayText.textContent =
+        "❌ Absensi sedang dinonaktifkan. Coba lagi nanti.";
+      allowBtn.textContent = "🔄 Refresh Halaman";
+      allowBtn.onclick = () => location.reload();
+      return;
+    }
+
+    if (locationRestricted) {
+      overlay.classList.remove("hidden");
+      overlayText.textContent =
+        "❌ Mohon berikan izin lokasi untuk melanjutkan absensi.";
+      allowBtn.textContent = "Izinkan Lokasi";
+      allowBtn.onclick = async () => {
+        try {
+          await requestLocationPermission();
+          overlay.classList.add("hidden");
+        } catch (err) {
+          overlayText.textContent = err;
+        }
+      };
+    } else {
+      overlay.classList.add("hidden");
+    }
   } catch (err) {
-    console.error("Error loading sheet:", err);
-    document.getElementById("status").textContent =
-      "Gagal memuat data master. Periksa koneksi Anda lalu refresh.";
-  } finally {
-    setInitialLoading(false);
+    document.getElementById("loading-text").textContent =
+      "❌ Gagal memuat data. Coba refresh.";
   }
 }
 
-// Fungsi search filter
+// Request izin lokasi
+function requestLocationPermission() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject("❌ Browser tidak mendukung geolokasi.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const distance = getDistanceFromLatLon(
+          latitude,
+          longitude,
+          targetLat,
+          targetLng
+        );
+
+        if (distance <= MAX_DISTANCE_METERS) {
+          localStorage.setItem("locationAllowed", "true");
+          resolve();
+        } else {
+          // ubah tombol jadi refresh
+          const allowBtn = document.getElementById("allow-location");
+          allowBtn.textContent = "🔄 Refresh Halaman";
+          allowBtn.onclick = () => location.reload();
+
+          reject("❌ Anda berada di luar lokasi absensi.");
+        }
+      },
+      () => {
+        const allowBtn = document.getElementById("allow-location");
+        allowBtn.textContent = "🔄 Refresh Halaman";
+        allowBtn.onclick = () => location.reload();
+
+        reject(
+          "❌ Mohon berikan izin lokasi. Jika tidak, absensi tidak bisa dilanjutkan."
+        );
+      }
+    );
+  });
+}
+
+// Search filter
 function setupSearch() {
   const searchInput = document.getElementById("search");
   const resultList = document.getElementById("result-list");
@@ -87,15 +155,14 @@ async function submitAbsensi() {
     return;
   }
 
-  // Pastikan nama ada di masterData
   if (!masterData.includes(nama)) {
     status.textContent = "Nama tidak valid. Pilih dari daftar.";
     return;
   }
 
-  // tombol loading
-  document.getElementById("submit-btn").disabled = true;
-  document.getElementById("submit-btn").innerHTML = "⏳ Absen...";
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.innerHTML = "⏳ Absen...";
 
   try {
     const res = await fetch(API_URL, {
@@ -104,34 +171,33 @@ async function submitAbsensi() {
       body: JSON.stringify({ nama, kode }),
     });
     const result = await res.json();
-
-    console.log("Submit result:", result);
     status.textContent = result.message;
   } catch (err) {
-    console.error("Error submit:", err);
     status.textContent = "Gagal mengirim absensi. Coba refresh halaman.";
   } finally {
-    document.getElementById("submit-btn").disabled = false;
-    document.getElementById("submit-btn").innerHTML = "Absen";
+    btn.disabled = false;
+    btn.innerHTML = "Absen";
   }
 }
 
-// Listener koneksi internet
+// Listener koneksi
 window.addEventListener("offline", () => {
-  const status = document.getElementById("status");
-  status.textContent = "⚠️ Koneksi internet terputus. Silakan cek koneksi Anda.";
-  alert("Koneksi internet hilang. Halaman akan di-refresh ketika online kembali.");
+  alert("⚠️ Koneksi internet hilang. Halaman akan di-refresh ketika online kembali.");
 });
-
 window.addEventListener("online", () => {
-  location.reload(); // paksa refresh biar data master diambil ulang
+  location.reload();
 });
 
-// Inisialisasi
-window.addEventListener("DOMContentLoaded", () => {
-  loadMasterData();
+// Uppercase kode
+document.addEventListener("input", (e) => {
+  if (e.target.id === "weekly-code") {
+    e.target.value = e.target.value.toUpperCase();
+  }
+});
+
+// Init
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadMasterData();
   setupSearch();
-  document
-    .getElementById("submit-btn")
-    .addEventListener("click", submitAbsensi);
+  document.getElementById("submit-btn").addEventListener("click", submitAbsensi);
 });
