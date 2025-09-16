@@ -116,17 +116,23 @@ function setupSearch() {
 async function submitAbsensi() {
   const nama = document.getElementById("search").value.trim();
   const kode = document.getElementById("weekly-code").value.trim();
-  const status = document.getElementById("status");
   const btn = document.getElementById("submit-btn");
 
-  status.textContent = ""; // Bersihkan status sebelumnya
+  // elemen overlay
+  const overlay = document.getElementById("location-overlay");
+  const overlayText = document.getElementById("overlay-text");
+  const overlayBtn = document.getElementById("allow-location");
 
   if (!nama || !kode) {
-    status.textContent = "Nama dan kode harus diisi.";
+    overlayText.textContent = "⚠️ Nama dan kode harus diisi.";
+    overlayBtn.textContent = "Mengerti";
+    overlay.classList.remove("hidden");
     return;
   }
   if (!masterData.includes(nama)) {
-    status.textContent = "Nama tidak valid. Pilih dari daftar.";
+    overlayText.textContent = "❌ Nama tidak valid. Pilih dari daftar.";
+    overlayBtn.textContent = "Mengerti";
+    overlay.classList.remove("hidden");
     return;
   }
 
@@ -134,26 +140,20 @@ async function submitAbsensi() {
   btn.innerHTML = "⏳ Memeriksa...";
 
   try {
-    // LANGKAH 1: Cek apakah lokasi diperlukan dan validasi
+    // LANGKAH 1: Cek lokasi jika diperlukan
     if (locationRestricted) {
       btn.innerHTML = "📍 Mengecek Lokasi...";
       try {
         await requestLocationPermission();
-        // Jika berhasil, lanjutkan ke langkah berikutnya
       } catch (err) {
-        // Jika gagal, tampilkan overlay dan hentikan proses
-        const overlay = document.getElementById("location-overlay");
-        const overlayText = document.getElementById("overlay-text");
-        const overlayBtn = document.getElementById("allow-location");
-        
         overlayText.textContent = err;
         overlayBtn.textContent = "Mengerti";
         overlay.classList.remove("hidden");
-        return; // Hentikan fungsi di sini
+        return;
       }
     }
 
-    // LANGKAH 2: Kirim data absensi
+    // LANGKAH 2: Kirim absensi
     btn.innerHTML = "⏳ Mengirim...";
     const res = await fetch(API_URL, {
       method: "POST",
@@ -161,16 +161,23 @@ async function submitAbsensi() {
       body: JSON.stringify({ nama, kode }),
     });
     const result = await res.json();
-    status.textContent = result.message;
+
+    // tampilkan pesan server di overlay
+    overlayText.textContent = result.message || "✔️ Absensi berhasil.";
+    overlayBtn.textContent = "Mengerti";
+    overlay.classList.remove("hidden");
 
   } catch (err) {
-    status.textContent = "Gagal mengirim absensi. Coba refresh halaman.";
+    overlayText.textContent = "❌ Gagal mengirim absensi. Coba refresh halaman.";
+    overlayBtn.textContent = "🔄 Refresh Halaman";
+    overlayBtn.onclick = () => location.reload();
+    overlay.classList.remove("hidden");
   } finally {
-    // Apapun hasilnya, aktifkan kembali tombolnya
     btn.disabled = false;
     btn.innerHTML = "Absen";
   }
 }
+
 
 // Listener koneksi (Tidak ada perubahan)
 window.addEventListener("offline", () => alert("⚠️ Koneksi internet hilang..."));
