@@ -222,9 +222,11 @@ ul#result-list li:hover {
   justify-content: center;
   z-index: 999;
 }
+
 .overlay.hidden {
   display: none;
 }
+
 .overlay-content {
   background: white;
   padding: 20px;
@@ -232,4 +234,17 @@ ul#result-list li:hover {
   text-align: center;
   max-width: 300px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  color: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+  .overlay-content {
+    background: #1e1e1e; /* lebih gelap */
+    color: #f1f1f1;      /* teks terang */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+  
+  .overlay {
+    background: rgba(0, 0, 0, 0.8); /* lebih gelap sedikit */
+  }
 }
