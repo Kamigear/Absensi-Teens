@@ -124,7 +124,7 @@ async function submitAbsensi() {
   const overlayBtn = document.getElementById("allow-location");
 
   if (!nama || !kode) {
-    overlayText.textContent = "⚠️ Nama dan kode harus diisi.";
+    overlayText.textContent = "❌ Nama dan kode harus diisi.";
     overlayBtn.textContent = "Mengerti";
     overlay.classList.remove("hidden");
     return;
@@ -169,7 +169,7 @@ async function submitAbsensi() {
 
   } catch (err) {
     overlayText.textContent = "❌ Gagal mengirim absensi. Coba refresh halaman.";
-    overlayBtn.textContent = "🔄 Refresh Halaman";
+    overlayBtn.textContent = "Refresh Halaman";
     overlayBtn.onclick = () => location.reload();
     overlay.classList.remove("hidden");
   } finally {
@@ -180,7 +180,7 @@ async function submitAbsensi() {
 
 
 // Listener koneksi (Tidak ada perubahan)
-window.addEventListener("offline", () => alert("⚠️ Koneksi internet hilang..."));
+window.addEventListener("offline", () => alert("❌ Koneksi internet hilang..."));
 window.addEventListener("online", () => location.reload());
 
 // Uppercase kode (Tidak ada perubahan)
