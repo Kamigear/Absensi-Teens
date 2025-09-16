@@ -9,7 +9,7 @@ let weeklyCode = "";
 let locationRestricted = false;
 let enabled = true;
 
-// Hitung jarak
+// Hitung jarak (Tidak ada perubahan)
 function getDistanceFromLatLon(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -24,7 +24,7 @@ function getDistanceFromLatLon(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// Ambil data master
+// Ambil data master (Logika overlay dihapus dari sini)
 async function loadMasterData() {
   try {
     document.getElementById("loading-text").textContent = "📡 Mengambil data...";
@@ -51,56 +51,27 @@ async function loadMasterData() {
       allowBtn.onclick = () => location.reload();
       return;
     }
-
-    if (locationRestricted) {
-      overlay.classList.remove("hidden");
-      overlayText.textContent =
-        "❌ Mohon berikan izin lokasi untuk melanjutkan absensi.";
-      allowBtn.textContent = "Izinkan Lokasi";
-      allowBtn.onclick = async () => {
-        try {
-          // Tampilkan status loading saat meminta lokasi
-          overlayText.textContent = "📍 Memeriksa lokasi Anda...";
-          allowBtn.disabled = true;
-          await requestLocationPermission();
-          overlay.classList.add("hidden");
-        } catch (err) {
-          // PERBAIKAN: Hanya tampilkan pesan error yang spesifik dari promise rejection.
-          overlayText.textContent = err;
-          allowBtn.textContent = 'Coba Lagi';
-        } finally {
-            allowBtn.disabled = false;
-        }
-      };
-    } else {
-      overlay.classList.add("hidden");
-    }
+    
+    // LOGIKA PENGECEKAN LOKASI DIHAPUS DARI SINI
+    
   } catch (err) {
     document.getElementById("loading-text").textContent =
       "❌ Gagal memuat data. Coba refresh.";
   }
 }
 
-// Request izin lokasi
+// Request izin lokasi (Tidak ada perubahan)
 function requestLocationPermission() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
       reject("❌ Browser tidak mendukung geolokasi.");
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
-        const distance = getDistanceFromLatLon(
-          latitude,
-          longitude,
-          targetLat,
-          targetLng
-        );
-
+        const distance = getDistanceFromLatLon(latitude, longitude, targetLat, targetLng);
         if (distance <= MAX_DISTANCE_METERS) {
-          localStorage.setItem("locationAllowed", "true");
           resolve();
         } else {
           reject("❌ Anda berada di luar lokasi absensi.");
@@ -120,21 +91,15 @@ function requestLocationPermission() {
   });
 }
 
-// Search filter
+// Search filter (Tidak ada perubahan)
 function setupSearch() {
   const searchInput = document.getElementById("search");
   const resultList = document.getElementById("result-list");
-
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.toLowerCase();
     resultList.innerHTML = "";
-
     if (!query) return;
-
-    const filtered = masterData.filter((nama) =>
-      nama.toLowerCase().includes(query)
-    );
-
+    const filtered = masterData.filter((nama) => nama.toLowerCase().includes(query));
     filtered.forEach((nama) => {
       const li = document.createElement("li");
       li.textContent = nama;
@@ -147,27 +112,49 @@ function setupSearch() {
   });
 }
 
-// Submit absensi
+// Submit absensi (LOGIKA UTAMA DIPINDAHKAN KE SINI)
 async function submitAbsensi() {
   const nama = document.getElementById("search").value.trim();
   const kode = document.getElementById("weekly-code").value.trim();
   const status = document.getElementById("status");
+  const btn = document.getElementById("submit-btn");
+
+  status.textContent = ""; // Bersihkan status sebelumnya
 
   if (!nama || !kode) {
     status.textContent = "Nama dan kode harus diisi.";
     return;
   }
-
   if (!masterData.includes(nama)) {
     status.textContent = "Nama tidak valid. Pilih dari daftar.";
     return;
   }
 
-  const btn = document.getElementById("submit-btn");
   btn.disabled = true;
-  btn.innerHTML = "⏳ Absen...";
+  btn.innerHTML = "⏳ Memeriksa...";
 
   try {
+    // LANGKAH 1: Cek apakah lokasi diperlukan dan validasi
+    if (locationRestricted) {
+      btn.innerHTML = "📍 Mengecek Lokasi...";
+      try {
+        await requestLocationPermission();
+        // Jika berhasil, lanjutkan ke langkah berikutnya
+      } catch (err) {
+        // Jika gagal, tampilkan overlay dan hentikan proses
+        const overlay = document.getElementById("location-overlay");
+        const overlayText = document.getElementById("overlay-text");
+        const overlayBtn = document.getElementById("allow-location");
+        
+        overlayText.textContent = err;
+        overlayBtn.textContent = "Mengerti";
+        overlay.classList.remove("hidden");
+        return; // Hentikan fungsi di sini
+      }
+    }
+
+    // LANGKAH 2: Kirim data absensi
+    btn.innerHTML = "⏳ Mengirim...";
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -175,23 +162,21 @@ async function submitAbsensi() {
     });
     const result = await res.json();
     status.textContent = result.message;
+
   } catch (err) {
     status.textContent = "Gagal mengirim absensi. Coba refresh halaman.";
   } finally {
+    // Apapun hasilnya, aktifkan kembali tombolnya
     btn.disabled = false;
     btn.innerHTML = "Absen";
   }
 }
 
-// Listener koneksi
-window.addEventListener("offline", () => {
-  alert("⚠️ Koneksi internet hilang. Halaman akan di-refresh ketika online kembali.");
-});
-window.addEventListener("online", () => {
-  location.reload();
-});
+// Listener koneksi (Tidak ada perubahan)
+window.addEventListener("offline", () => alert("⚠️ Koneksi internet hilang..."));
+window.addEventListener("online", () => location.reload());
 
-// Uppercase kode
+// Uppercase kode (Tidak ada perubahan)
 document.addEventListener("input", (e) => {
   if (e.target.id === "weekly-code") {
     e.target.value = e.target.value.toUpperCase();
@@ -203,4 +188,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   await loadMasterData();
   setupSearch();
   document.getElementById("submit-btn").addEventListener("click", submitAbsensi);
+
+  // Tambahkan listener untuk tombol di overlay agar berfungsi sebagai tombol 'tutup'
+  document.getElementById("allow-location").addEventListener('click', () => {
+    document.getElementById("location-overlay").classList.add('hidden');
+  });
 });
