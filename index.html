@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Absensi Mingguan</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -12,30 +13,33 @@
     <div id="loading-text">Mengambil data...</div>
   </div>
 
-  <div class="container" style="display:none;">
-    <h1>Absensi Mingguan</h1>
-    
-    <!-- Search Bar Nama -->
-    <label for="search">Cari Nama:</label>
-    <input type="text" id="search" placeholder="Ketik nama Anda...">
-    <ul id="result-list"></ul>
+  <!-- Wrapper to center the container -->
+  <main class="main-wrapper">
+    <div class="container" style="display:none;">
+      <h1>Absensi Mingguan</h1>
+      
+      <!-- Search Bar Nama -->
+      <label for="search">Cari Nama:</label>
+      <input type="text" id="search" placeholder="Ketik nama Anda...">
+      <ul id="result-list"></ul>
 
-    <!-- Kode Mingguan -->
-    <label for="weekly-code">Kode Mingguan:</label>
-    <input type="text" id="weekly-code" placeholder="Masukkan kode">
+      <!-- Kode Mingguan -->
+      <label for="weekly-code">Kode Mingguan:</label>
+      <input type="text" id="weekly-code" placeholder="Masukkan kode">
 
-    <button id="submit-btn">Absen</button>
-    <p id="status"></p>
-    <p>Jika nama belum terdaftar, mohon daftar dengan pengurus</p>
-  </div>
+      <button id="submit-btn">Absen</button>
+      <p id="status"></p>
+      <p>Jika nama belum terdaftar, amohon daftar dengan pengurus</p>
+    </div>
+  </main>
 
+  <!-- Overlay remains a direct child of body -->
   <div id="location-overlay" class="overlay hidden">
     <div class="overlay-content">
       <p id="overlay-text">❌ Mohon berikan izin lokasi untuk melanjutkan absensi.</p>
       <button id="allow-location">Izinkan Lokasi</button>
     </div>
   </div>
-
 
   <script src="script.js"></script>
 </body>

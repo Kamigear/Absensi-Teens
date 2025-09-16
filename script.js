@@ -59,10 +59,17 @@ async function loadMasterData() {
       allowBtn.textContent = "Izinkan Lokasi";
       allowBtn.onclick = async () => {
         try {
+          // Tampilkan status loading saat meminta lokasi
+          overlayText.textContent = "📍 Memeriksa lokasi Anda...";
+          allowBtn.disabled = true;
           await requestLocationPermission();
           overlay.classList.add("hidden");
         } catch (err) {
+          // PERBAIKAN: Hanya tampilkan pesan error yang spesifik dari promise rejection.
           overlayText.textContent = err;
+          allowBtn.textContent = 'Coba Lagi';
+        } finally {
+            allowBtn.disabled = false;
         }
       };
     } else {
@@ -96,23 +103,19 @@ function requestLocationPermission() {
           localStorage.setItem("locationAllowed", "true");
           resolve();
         } else {
-          // ubah tombol jadi refresh
-          const allowBtn = document.getElementById("allow-location");
-          allowBtn.textContent = "🔄 Refresh Halaman";
-          allowBtn.onclick = () => location.reload();
-
           reject("❌ Anda berada di luar lokasi absensi.");
         }
       },
-      () => {
-        const allowBtn = document.getElementById("allow-location");
-        allowBtn.textContent = "🔄 Refresh Halaman";
-        allowBtn.onclick = () => location.reload();
-
-        reject(
-          "❌ Mohon berikan izin lokasi. Jika tidak, absensi tidak bisa dilanjutkan."
-        );
-      }
+      (error) => {
+        let message = "❌ Izin lokasi ditolak. Absensi tidak bisa dilanjutkan.";
+        if(error.code === 1) { // PERMISSION_DENIED
+            message = "❌ Anda menolak izin lokasi. Aktifkan di pengaturan browser untuk melanjutkan.";
+        } else if (error.code === 2) { // POSITION_UNAVAILABLE
+            message = "❌ Lokasi tidak dapat ditentukan. Pastikan GPS aktif.";
+        }
+        reject(message);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   });
 }
