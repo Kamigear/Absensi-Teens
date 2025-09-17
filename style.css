@@ -237,6 +237,12 @@ ul#result-list li:hover {
   color: #000;
 }
 
+#overlay-text {
+  overflow-wrap: break-word;
+  text-align: left;
+  line-height: 1.5;
+}
+
 @media (prefers-color-scheme: dark) {
   .overlay-content {
     background: #1e1e1e; /* lebih gelap */
@@ -245,6 +251,6 @@ ul#result-list li:hover {
   }
   
   .overlay {
-    background: rgba(0, 0, 0, 0.8); /* lebih gelap sedikit */
+    background: rgba(0, 0, 0, 0.8);
   }
 }
